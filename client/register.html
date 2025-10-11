@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Maintenance Request App</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="auth-page">
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="index.html">
+                    <h2>MaintenanceApp</h2>
+                </a>
+            </div>
+            <div class="nav-menu">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="login.html" class="nav-link">Login</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="auth-main">
+        <div class="auth-container">
+            <div class="auth-card">
+                <div class="auth-header">
+                    <h1>Create Account</h1>
+                    <p>Join thousands of students already using our platform</p>
+                </div>
+
+                <form id="registerForm" class="auth-form">
+                    <div class="form-group">
+                        <label for="name">Full Name</label>
+                        <input 
+                            type="text" 
+                            id="name" 
+                            name="name" 
+                            required 
+                            placeholder="Enter your full name"
+                        >
+                        <div class="error-message" id="name-error"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input 
+                            type="email" 
+                            id="email" 
+                            name="email" 
+                            required 
+                            placeholder="Enter your email"
+                        >
+                        <div class="error-message" id="email-error"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input 
+                            type="password" 
+                            id="password" 
+                            name="password" 
+                            required 
+                            placeholder="Create a strong password"
+                            minlength="6"
+                        >
+                        <div class="password-requirements">
+                            <small>Password must be at least 6 characters long and contain letters and numbers</small>
+                        </div>
+                        <div class="error-message" id="password-error"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm Password</label>
+                        <input 
+                            type="password" 
+                            id="confirmPassword" 
+                            name="confirmPassword" 
+                            required 
+                            placeholder="Confirm your password"
+                        >
+                        <div class="error-message" id="confirmPassword-error"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="role">I am a:</label>
+                        <select id="role" name="role">
+                            <option value="student">Student/Resident</option>
+                            <option value="admin">Administrator</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="terms" required>
+                            <span class="checkmark"></span>
+                            I agree to the <a href="#" target="_blank">Terms of Service</a> and <a href="#" target="_blank">Privacy Policy</a>
+                        </label>
+                        <div class="error-message" id="terms-error"></div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-full" id="registerBtn">
+                        <span class="btn-text">Create Account</span>
+                        <span class="btn-loading" style="display: none;">
+                            <span class="spinner"></span>
+                            Creating Account...
+                        </span>
+                    </button>
+                </form>
+
+                <div class="auth-footer">
+                    <p>Already have an account? <a href="login.html">Sign in here</a></p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Alert/Toast notification -->
+    <div id="toast" class="toast"></div>
+
+    <script src="js/utils.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Clear previous errors
+            clearFormErrors();
+            
+            // Get form data
+            const formData = new FormData(e.target);
+            const data = {
+                name: formData.get('name').trim(),
+                email: formData.get('email').trim(),
+                password: formData.get('password'),
+                role: formData.get('role')
+            };
+            
+            const confirmPassword = formData.get('confirmPassword');
+            
+            // Client-side validation
+            let hasErrors = false;
+            
+            // Validate name
+            if (!data.name || data.name.length < 2) {
+                showFieldError('name', 'Name must be at least 2 characters long');
+                hasErrors = true;
+            }
+            
+            // Validate email
+            if (!isValidEmail(data.email)) {
+                showFieldError('email', 'Please enter a valid email address');
+                hasErrors = true;
+            }
+            
+            // Validate password
+            if (!isValidPassword(data.password)) {
+                showFieldError('password', 'Password must be at least 6 characters and contain letters and numbers');
+                hasErrors = true;
+            }
+            
+            // Validate password confirmation
+            if (data.password !== confirmPassword) {
+                showFieldError('confirmPassword', 'Passwords do not match');
+                hasErrors = true;
+            }
+            
+            // Check terms
+            if (!document.getElementById('terms').checked) {
+                showFieldError('terms', 'Please agree to the terms and conditions');
+                hasErrors = true;
+            }
+            
+            if (hasErrors) return;
+            
+            // Show loading state
+            setButtonLoading('registerBtn', true);
+            
+            try {
+                const response = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Store token
+                    setAuthToken(result.token);
+                    
+                    // Show success message
+                    showToast('Account created successfully! Redirecting...', 'success');
+                    
+                    // Redirect to dashboard
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 1500);
+                    
+                } else {
+                    // Handle validation errors
+                    if (result.errors && Array.isArray(result.errors)) {
+                        result.errors.forEach(error => {
+                            if (error.path) {
+                                showFieldError(error.path, error.msg);
+                            }
+                        });
+                    } else {
+                        showToast(result.message || 'Registration failed', 'error');
+                    }
+                }
+                
+            } catch (error) {
+                console.error('Registration error:', error);
+                showToast('Network error. Please try again.', 'error');
+            } finally {
+                setButtonLoading('registerBtn', false);
+            }
+        });
+        
+        // Real-time password validation
+        document.getElementById('password').addEventListener('input', (e) => {
+            const password = e.target.value;
+            const isValid = isValidPassword(password);
+            
+            const requirements = document.querySelector('.password-requirements');
+            requirements.style.color = isValid ? 'var(--success-color)' : 'var(--text-secondary)';
+        });
+        
+        // Real-time password confirmation
+        document.getElementById('confirmPassword').addEventListener('input', (e) => {
+            const password = document.getElementById('password').value;
+            const confirmPassword = e.target.value;
+            
+            if (confirmPassword && password !== confirmPassword) {
+                showFieldError('confirmPassword', 'Passwords do not match');
+            } else {
+                clearFieldError('confirmPassword');
+            }
+        });
+    </script>
+</body>
+</html>

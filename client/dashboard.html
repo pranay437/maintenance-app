@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Maintenance Request App</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <nav class="navbar dashboard-nav">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <h2>MaintenanceApp</h2>
+            </div>
+            <div class="nav-user">
+                <span class="user-welcome">Welcome, <span id="userName">User</span></span>
+                <div class="user-menu">
+                    <button class="user-menu-btn" id="userMenuBtn">
+                        <div class="user-avatar">
+                            <span id="userInitial">U</span>
+                        </div>
+                        <span class="dropdown-arrow">▼</span>
+                    </button>
+                    <div class="user-dropdown" id="userDropdown">
+                        <a href="#" id="profileLink">Profile</a>
+                        <a href="#" id="settingsLink">Settings</a>
+                        <hr>
+                        <a href="#" id="logoutBtn">Logout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="dashboard-main">
+        <!-- Student Dashboard -->
+        <div id="studentDashboard" class="dashboard-content" style="display: none;">
+            <div class="dashboard-header">
+                <h1>My Dashboard</h1>
+                <p>Manage your maintenance requests</p>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">📋</div>
+                    <div class="stat-info">
+                        <div class="stat-number" id="totalComplaints">0</div>
+                        <div class="stat-label">Total Requests</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⏳</div>
+                    <div class="stat-info">
+                        <div class="stat-number" id="pendingComplaints">0</div>
+                        <div class="stat-label">Pending</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🔧</div>
+                    <div class="stat-info">
+                        <div class="stat-number" id="inProgressComplaints">0</div>
+                        <div class="stat-label">In Progress</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-info">
+                        <div class="stat-number" id="resolvedComplaints">0</div>
+                        <div class="stat-label">Resolved</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- New Complaint Form -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2>Submit New Request</h2>
+                    <button class="btn btn-secondary btn-sm" id="toggleFormBtn">Hide Form</button>
+                </div>
+                <div class="card-body" id="complaintFormContainer">
+                    <form id="complaintForm" class="complaint-form">
+                        <div class="form-row">
+                            <div class="form-group flex-2">
+                                <label for="title">Request Title</label>
+                                <input type="text" id="title" name="title" required placeholder="Brief description of the issue">
+                                <div class="error-message" id="title-error"></div>
+                            </div>
+                            <div class="form-group flex-1">
+                                <label for="category">Category</label>
+                                <select id="category" name="category" required>
+                                    <option value="">Select category</option>
+                                    <option value="electrical">Electrical</option>
+                                    <option value="plumbing">Plumbing</option>
+                                    <option value="cleaning">Cleaning</option>
+                                    <option value="other">Other</option>
+                                </select>
+                                <div class="error-message" id="category-error"></div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="description">Detailed Description</label>
+                            <textarea id="description" name="description" required placeholder="Provide detailed information about the maintenance issue..." rows="4"></textarea>
+                            <div class="error-message" id="description-error"></div>
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="submitComplaintBtn">
+                            <span class="btn-text">Submit Request</span>
+                            <span class="btn-loading" style="display: none;">
+                                <span class="spinner"></span>
+                                Submitting...
+                            </span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- My Complaints -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2>My Requests</h2>
+                    <div class="card-actions">
+                        <select id="statusFilter" class="filter-select">
+                            <option value="">All Status</option>
+                            <option value="pending">Pending</option>
+                            <option value="in progress">In Progress</option>
+                            <option value="resolved">Resolved</option>
+                        </select>
+                        <button class="btn btn-secondary btn-sm" id="refreshComplaints">Refresh</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="complaintsLoading" class="loading-state">
+                        <div class="spinner"></div>
+                        <p>Loading your requests...</p>
+                    </div>
+                    <div id="complaintsContainer"></div>
+                    <div id="noComplaints" class="empty-state" style="display: none;">
+                        <div class="empty-icon">📋</div>
+                        <h3>No requests found</h3>
+                        <p>You haven't submitted any maintenance requests yet.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Dashboard -->
+        <div id="adminDashboard" class="dashboard-content" style="display: none;">
+            <div class="dashboard-header">
+                <h1>Admin Dashboard</h1>
+                <p>Manage all maintenance requests</p>
+            </div>
+
+            <!-- Admin Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-info">
+                        <div class="stat-number" id="adminTotalComplaints">0</div>
+                        <div class="stat-label">Total Requests</div>
+                    </div>
+                </div>
+                <div class="stat-card urgent">
+                    <div class="stat-icon">🚨</div>
+                    <div class="stat-info">
+                        <div class="stat-number" id="adminPendingComplaints">0</div>
+                        <div class="stat-label">Pending</div>
+                    </div>
+                </div>
+                <div class="stat-card warning">
+                    <div class="stat-icon">⚙️</div>
+                    <div class="stat-info">
+                        <div class="stat-number" id="adminInProgressComplaints">0</div>
+                        <div class="stat-label">In Progress</div>
+                    </div>
+                </div>
+                <div class="stat-card success">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-info">
+                        <div class="stat-number" id="adminResolvedComplaints">0</div>
+                        <div class="stat-label">Resolved</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- All Complaints Management -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2>All Maintenance Requests</h2>
+                    <div class="card-actions">
+                        <select id="adminStatusFilter" class="filter-select">
+                            <option value="">All Status</option>
+                            <option value="pending">Pending</option>
+                            <option value="in progress">In Progress</option>
+                            <option value="resolved">Resolved</option>
+                        </select>
+                        <select id="adminCategoryFilter" class="filter-select">
+                            <option value="">All Categories</option>
+                            <option value="electrical">Electrical</option>
+                            <option value="plumbing">Plumbing</option>
+                            <option value="cleaning">Cleaning</option>
+                            <option value="other">Other</option>
+                        </select>
+                        <button class="btn btn-secondary btn-sm" id="refreshAllComplaints">Refresh</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="adminComplaintsLoading" class="loading-state">
+                        <div class="spinner"></div>
+                        <p>Loading all requests...</p>
+                    </div>
+                    <div id="adminComplaintsContainer"></div>
+                    <div id="adminNoComplaints" class="empty-state" style="display: none;">
+                        <div class="empty-icon">📋</div>
+                        <h3>No requests found</h3>
+                        <p>No maintenance requests match your current filters.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Status Update Modal -->
+    <div id="statusModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Update Request Status</h3>
+                <button class="modal-close" id="closeModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="complaint-details">
+                    <h4 id="modalComplaintTitle"></h4>
+                    <p id="modalComplaintDescription"></p>
+                    <div class="complaint-meta">
+                        <span>Submitted by: <strong id="modalComplaintUser"></strong></span>
+                        <span>Category: <strong id="modalComplaintCategory"></strong></span>
+                    </div>
+                </div>
+                <form id="statusUpdateForm">
+                    <div class="form-group">
+                        <label for="newStatus">New Status</label>
+                        <select id="newStatus" name="status" required>
+                            <option value="pending">Pending</option>
+                            <option value="in progress">In Progress</option>
+                            <option value="resolved">Resolved</option>
+                        </select>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-secondary" id="cancelUpdate">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="confirmUpdate">
+                            <span class="btn-text">Update Status</span>
+                            <span class="btn-loading" style="display: none;">
+                                <span class="spinner"></span>
+                                Updating...
+                            </span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast notification -->
+    <div id="toast" class="toast"></div>
+
+    <script src="js/utils.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script>
+        // Initialize dashboard on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeDashboard();
+        });
+
+        async function initializeDashboard() {
+            // Check authentication
+            const token = getAuthToken();
+            if (!token) {
+                window.location.href = '/login';
+                return;
+            }
+
+            try {
+                // Get user information
+                const response = await fetch('/api/auth/me', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Authentication failed');
+                }
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    const user = result.user;
+                    
+                    // Update user interface
+                    document.getElementById('userName').textContent = user.name;
+                    document.getElementById('userInitial').textContent = user.name.charAt(0).toUpperCase();
+                    
+                    // Show appropriate dashboard
+                    if (user.role === 'admin') {
+                        document.getElementById('adminDashboard').style.display = 'block';
+                        initializeAdminDashboard();
+                    } else {
+                        document.getElementById('studentDashboard').style.display = 'block';
+                        initializeStudentDashboard();
+                    }
+                    
+                } else {
+                    throw new Error('Failed to get user information');
+                }
+
+            } catch (error) {
+                console.error('Dashboard initialization error:', error);
+                clearAuthData();
+                window.location.href = '/login';
+            }
+        }
+
+        // User menu functionality
+        document.getElementById('userMenuBtn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            const dropdown = document.getElementById('userDropdown');
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', () => {
+            document.getElementById('userDropdown').style.display = 'none';
+        });
+
+        // Logout functionality
+        document.getElementById('logoutBtn').addEventListener('click', (e) => {
+            e.preventDefault();
+            clearAuthData();
+            showToast('Logged out successfully', 'success');
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 1000);
+        });
+
+        // Profile and settings placeholders
+        document.getElementById('profileLink').addEventListener('click', (e) => {
+            e.preventDefault();
+            showToast('Profile page coming soon!', 'info');
+        });
+
+        document.getElementById('settingsLink').addEventListener('click', (e) => {
+            e.preventDefault();
+            showToast('Settings page coming soon!', 'info');
+        });
+    </script>
+</body>
+</html>
