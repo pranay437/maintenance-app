@@ -109,6 +109,22 @@ app.get('/dashboard', (req, res) => {
 });
 
 // =============================
+// 🧪 Health Check
+// =============================
+app.get('/api/health', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Server is running',
+    env: {
+      NODE_ENV: process.env.NODE_ENV,
+      MONGODB_URI: process.env.MONGODB_URI ? 'Set' : 'Not Set',
+      JWT_SECRET: process.env.JWT_SECRET ? 'Set' : 'Not Set'
+    },
+    mongodb: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected'
+  });
+});
+
+// =============================
 // 🧪 Test MongoDB Connection
 // =============================
 app.get('/test', async (req, res) => {
