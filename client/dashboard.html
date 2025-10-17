@@ -17,6 +17,7 @@
                 <div class="user-menu">
                     <button class="user-menu-btn" id="userMenuBtn">
                         <div class="user-avatar">
+                            <img id="userPhoto" src="" alt="User Photo" style="display: none; width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
                             <span id="userInitial">U</span>
                         </div>
                         <span class="dropdown-arrow">▼</span>
@@ -39,6 +40,8 @@
                 <h1>My Dashboard</h1>
                 <p>Manage your maintenance requests</p>
             </div>
+
+
 
             <!-- Quick Stats -->
             <div class="stats-grid">
@@ -102,6 +105,22 @@
                             <label for="description">Detailed Description</label>
                             <textarea id="description" name="description" required placeholder="Provide detailed information about the maintenance issue..." rows="4"></textarea>
                             <div class="error-message" id="description-error"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="problemPhoto">Problem Photo (Optional)</label>
+                            <div class="photo-upload-area">
+                                <input type="file" id="problemPhoto" name="problemPhoto" accept="image/*" style="display: none;">
+                                <div class="photo-preview" id="photoPreview" style="display: none;">
+                                    <img id="previewImage" src="" alt="Problem preview" style="max-width: 200px; max-height: 200px; border-radius: 8px; object-fit: cover;">
+                                    <button type="button" class="btn btn-sm btn-secondary" id="removePhoto">Remove</button>
+                                </div>
+                                <div class="photo-upload-placeholder" id="photoPlaceholder">
+                                    <div class="upload-icon">📷</div>
+                                    <p>Click to add a photo of the problem</p>
+                                    <button type="button" class="btn btn-secondary" id="selectPhotoBtn">Select Photo</button>
+                                </div>
+                            </div>
+                            <p class="upload-info">Max size: 5MB. Formats: JPG, PNG, GIF</p>
                         </div>
                         <button type="submit" class="btn btn-primary" id="submitComplaintBtn">
                             <span class="btn-text">Submit Request</span>
@@ -178,6 +197,26 @@
                     <div class="stat-info">
                         <div class="stat-number" id="adminResolvedComplaints">0</div>
                         <div class="stat-label">Resolved</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Students Management -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2>All Students</h2>
+                    <button class="btn btn-secondary btn-sm" id="refreshStudents">Refresh</button>
+                </div>
+                <div class="card-body">
+                    <div id="studentsLoading" class="loading-state">
+                        <div class="spinner"></div>
+                        <p>Loading students...</p>
+                    </div>
+                    <div id="studentsContainer"></div>
+                    <div id="noStudents" class="empty-state" style="display: none;">
+                        <div class="empty-icon">👥</div>
+                        <h3>No students found</h3>
+                        <p>No students are registered yet.</p>
                     </div>
                 </div>
             </div>
@@ -300,13 +339,25 @@
                     document.getElementById('userName').textContent = user.name;
                     document.getElementById('userInitial').textContent = user.name.charAt(0).toUpperCase();
                     
+                    // Update user photo if exists
+                    if (user.photo) {
+                        const userPhoto = document.getElementById('userPhoto');
+                        const userInitial = document.getElementById('userInitial');
+                        userPhoto.src = `/uploads/${user.photo}`;
+                        userPhoto.style.display = 'block';
+                        userInitial.style.display = 'none';
+                    }
+                    
                     // Show appropriate dashboard
                     if (user.role === 'admin') {
                         document.getElementById('adminDashboard').style.display = 'block';
                         initializeAdminDashboard();
+                        loadStudents();
                     } else {
                         document.getElementById('studentDashboard').style.display = 'block';
                         initializeStudentDashboard();
+                        
+
                     }
                     
                 } else {
@@ -352,6 +403,62 @@
             e.preventDefault();
             showToast('Settings page coming soon!', 'info');
         });
+
+
+
+        async function loadStudents() {
+            try {
+                const token = getAuthToken();
+                const response = await fetch('/api/auth/users', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    displayStudents(result.users);
+                } else {
+                    showToast(result.message || 'Failed to load students', 'error');
+                }
+            } catch (error) {
+                console.error('Load students error:', error);
+                showToast('Failed to load students', 'error');
+            }
+        }
+
+        function displayStudents(students) {
+            const container = document.getElementById('studentsContainer');
+            const loading = document.getElementById('studentsLoading');
+            const noStudents = document.getElementById('noStudents');
+
+            loading.style.display = 'none';
+
+            if (students.length === 0) {
+                noStudents.style.display = 'block';
+                container.innerHTML = '';
+                return;
+            }
+
+            noStudents.style.display = 'none';
+            container.innerHTML = students.map(student => `
+                <div class="student-card" style="display: flex; align-items: center; padding: 15px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 10px; background: white;">
+                    <div class="student-photo" style="margin-right: 15px;">
+                        ${student.photo ? 
+                            `<img src="/uploads/${student.photo}" alt="${student.name}" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid #ddd;">` :
+                            `<div style="width: 60px; height: 60px; border-radius: 50%; background: #f0f0f0; display: flex; align-items: center; justify-content: center; border: 2px solid #ddd; font-size: 24px; color: #999;">${student.name.charAt(0).toUpperCase()}</div>`
+                        }
+                    </div>
+                    <div class="student-info">
+                        <h4 style="margin: 0 0 5px 0; color: #333;">${student.name}</h4>
+                        <p style="margin: 0; color: #666; font-size: 14px;">${student.email}</p>
+                        <p style="margin: 5px 0 0 0; color: #888; font-size: 12px;">Joined: ${new Date(student.createdAt).toLocaleDateString()}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        document.getElementById('refreshStudents')?.addEventListener('click', loadStudents);
     </script>
 </body>
 </html>

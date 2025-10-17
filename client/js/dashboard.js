@@ -1,7 +1,7 @@
 // Dashboard functionality
 
 // ✅ Base URL for backend API
-const API_BASE = "http://localhost:3000";
+const API_BASE = "http://localhost:3001";
 
 // Utility for authenticated requests
 async function makeAuthenticatedRequest(endpoint, options = {}) {
@@ -66,6 +66,20 @@ function setupStudentEventListeners() {
   const refreshBtn = document.getElementById('refreshComplaints');
   if (refreshBtn) {
     refreshBtn.addEventListener('click', () => loadStudentComplaints());
+  }
+  
+  // Photo upload functionality
+  const selectPhotoBtn = document.getElementById('selectPhotoBtn');
+  const problemPhoto = document.getElementById('problemPhoto');
+  const removePhotoBtn = document.getElementById('removePhoto');
+  
+  if (selectPhotoBtn && problemPhoto) {
+    selectPhotoBtn.addEventListener('click', () => problemPhoto.click());
+    problemPhoto.addEventListener('change', handlePhotoSelection);
+  }
+  
+  if (removePhotoBtn) {
+    removePhotoBtn.addEventListener('click', removeSelectedPhoto);
   }
 }
 
@@ -146,9 +160,13 @@ async function handleComplaintSubmission(e) {
   setButtonLoading('submitComplaintBtn', true);
   
   try {
-    const response = await makeAuthenticatedRequest('/api/complaints/create', {
+    const token = getAuthToken();
+    const response = await fetch(`${API_BASE}/api/complaints/create`, {
       method: 'POST',
-      body: JSON.stringify(data)
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      body: formData
     });
     
     if (response && response.ok) {
@@ -160,6 +178,7 @@ async function handleComplaintSubmission(e) {
         
         // Reset form
         resetForm('complaintForm');
+        removeSelectedPhoto();
         
         // Reload complaints
         await loadStudentComplaints();
@@ -300,6 +319,7 @@ function renderStudentComplaints(complaintsList) {
           ${getStatusIcon(complaint.status)} ${complaint.status}
         </div>
       </div>
+      ${complaint.photo ? `<div class="complaint-photo"><img src="/uploads/${complaint.photo}" alt="Problem photo" style="max-width: 200px; max-height: 150px; border-radius: 8px; object-fit: cover; margin: 10px 0; cursor: pointer;" onclick="viewPhoto('/uploads/${complaint.photo}')"></div>` : ''}
       <p class="complaint-description">${escapeHtml(truncateText(complaint.description))}</p>
       <div class="complaint-footer">
         <span class="complaint-date">Last updated: ${formatDate(complaint.updatedAt)}</span>
@@ -341,6 +361,7 @@ function renderAdminComplaints(complaintsList) {
             ${getStatusIcon(complaint.status)} ${complaint.status}
           </div>
         </div>
+        ${complaint.photo ? `<div class="complaint-photo"><img src="/uploads/${complaint.photo}" alt="Problem photo" style="max-width: 200px; max-height: 150px; border-radius: 8px; object-fit: cover; margin: 10px 0; cursor: pointer;" onclick="viewPhoto('/uploads/${complaint.photo}')"></div>` : ''}
         <p class="complaint-description">${escapeHtml(truncateText(complaint.description))}</p>
         <div class="complaint-footer">
           <span class="complaint-date">Last updated: ${formatDate(complaint.updatedAt)}</span>
@@ -445,9 +466,17 @@ function openStatusModal(complaintId) {
 async function handleStatusUpdate(e) {
   e.preventDefault();
   
-  if (!currentComplaintId) return;
+  if (!currentComplaintId) {
+    showToast('No complaint selected', 'error');
+    return;
+  }
   
   const newStatus = document.getElementById('newStatus').value;
+  
+  if (!newStatus) {
+    showToast('Please select a status', 'error');
+    return;
+  }
   
   // Show loading state
   setButtonLoading('confirmUpdate', true);
@@ -498,6 +527,99 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
+function handleFormErrors(errors) {
+  Object.keys(errors).forEach(field => {
+    showFieldError(field, errors[field]);
+  });
+}
+
+function truncateText(text, maxLength = 150) {
+  if (text.length <= maxLength) return text;
+  return text.substring(0, maxLength).trim() + '...';
+}
+
+function formatDate(dateString) {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffInHours = (now - date) / (1000 * 60 * 60);
+  
+  if (diffInHours < 24) {
+    return formatRelativeTime(dateString);
+  } else {
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+}
+
+function formatRelativeTime(dateString) {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffInSeconds = (now - date) / 1000;
+  
+  if (diffInSeconds < 60) {
+    return 'Just now';
+  } else if (diffInSeconds < 3600) {
+    const minutes = Math.floor(diffInSeconds / 60);
+    return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+  } else if (diffInSeconds < 86400) {
+    const hours = Math.floor(diffInSeconds / 3600);
+    return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+  } else {
+    const days = Math.floor(diffInSeconds / 86400);
+    return `${days} day${days > 1 ? 's' : ''} ago`;
+  }
+}
+
+function getStatusBadgeClass(status) {
+  switch (status.toLowerCase()) {
+    case 'pending':
+      return 'status-pending';
+    case 'in progress':
+      return 'status-in-progress';
+    case 'resolved':
+      return 'status-resolved';
+    default:
+      return 'status-pending';
+  }
+}
+
+function getStatusIcon(status) {
+  switch (status.toLowerCase()) {
+    case 'pending':
+      return '⏳';
+    case 'in progress':
+      return '🔧';
+    case 'resolved':
+      return '✅';
+    default:
+      return '⏳';
+  }
+}
+
+function getCategoryIcon(category) {
+  switch (category.toLowerCase()) {
+    case 'electrical':
+      return '⚡';
+    case 'plumbing':
+      return '🚰';
+    case 'cleaning':
+      return '🧹';
+    case 'other':
+      return '🔧';
+    default:
+      return '🔧';
+  }
+}
+
+function formatCategory(category) {
+  return category.charAt(0).toUpperCase() + category.slice(1);
+}
+
 // Auto-refresh data every 30 seconds
 function setupAutoRefresh() {
   setInterval(async () => {
@@ -516,6 +638,74 @@ function setupAutoRefresh() {
   }, 30000); // 30 seconds
 }
 
+// Photo handling functions
+function handlePhotoSelection(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  
+  // Validate file size (5MB)
+  if (file.size > 5 * 1024 * 1024) {
+    showToast('Photo size must be less than 5MB', 'error');
+    e.target.value = '';
+    return;
+  }
+  
+  // Validate file type
+  const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+  if (!allowedTypes.includes(file.type)) {
+    showToast('Only JPG, PNG, and GIF files are allowed', 'error');
+    e.target.value = '';
+    return;
+  }
+  
+  // Show preview
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const previewImage = document.getElementById('previewImage');
+    const photoPreview = document.getElementById('photoPreview');
+    const photoPlaceholder = document.getElementById('photoPlaceholder');
+    
+    if (previewImage && photoPreview && photoPlaceholder) {
+      previewImage.src = e.target.result;
+      photoPreview.style.display = 'block';
+      photoPlaceholder.style.display = 'none';
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeSelectedPhoto() {
+  const problemPhoto = document.getElementById('problemPhoto');
+  const photoPreview = document.getElementById('photoPreview');
+  const photoPlaceholder = document.getElementById('photoPlaceholder');
+  const previewImage = document.getElementById('previewImage');
+  
+  if (problemPhoto) problemPhoto.value = '';
+  if (previewImage) previewImage.src = '';
+  if (photoPreview) photoPreview.style.display = 'none';
+  if (photoPlaceholder) photoPlaceholder.style.display = 'block';
+}
+
+// Photo viewing function
+function viewPhoto(photoUrl) {
+  const modal = document.createElement('div');
+  modal.className = 'photo-modal';
+  modal.innerHTML = `
+    <div class="photo-modal-content">
+      <span class="photo-modal-close">&times;</span>
+      <img src="${photoUrl}" alt="Problem photo" style="max-width: 90vw; max-height: 90vh; object-fit: contain;">
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
+  
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal || e.target.className === 'photo-modal-close') {
+      document.body.removeChild(modal);
+    }
+  });
+}
+
 // Export dashboard functions
 window.dashboard = {
   initializeStudentDashboard,
@@ -523,8 +713,12 @@ window.dashboard = {
   loadStudentComplaints,
   loadAllComplaints,
   openStatusModal,
-  setupAutoRefresh
+  setupAutoRefresh,
+  handlePhotoSelection,
+  removeSelectedPhoto
 };
+
+window.viewPhoto = viewPhoto;
 
 // Initialize auto-refresh
 document.addEventListener('DOMContentLoaded', () => {

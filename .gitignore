@@ -1,17 +1,9 @@
-# Node.js dependencies
 node_modules/
-
-# Environment variables
 .env
-
-# Logs
-logs/
+.env.local
+.env.production
+uploads/
 *.log
-
-# OS files
 .DS_Store
-Thumbs.db
-
-# Optional build folders (if using a build tool)
-dist/
-build/
+.vercel
+.vercel

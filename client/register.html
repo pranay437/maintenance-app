@@ -82,13 +82,33 @@
                         <div class="error-message" id="confirmPassword-error"></div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="role">I am a:</label>
-                        <select id="role" name="role">
-                            <option value="student">Student/Resident</option>
-                            <option value="admin">Administrator</option>
-                        </select>
+                    <div class="form-row">
+                        <div class="form-group flex-1">
+                            <label for="hostelCode">Hostel Code</label>
+                            <input 
+                                type="text" 
+                                id="hostelCode" 
+                                name="hostelCode" 
+                                required 
+                                placeholder="e.g., HST001"
+                                style="text-transform: uppercase;"
+                            >
+                            <div class="error-message" id="hostelCode-error"></div>
+                        </div>
+                        <div class="form-group flex-2">
+                            <label for="hostelName">Hostel Name</label>
+                            <input 
+                                type="text" 
+                                id="hostelName" 
+                                name="hostelName" 
+                                required 
+                                placeholder="Enter hostel name"
+                            >
+                            <div class="error-message" id="hostelName-error"></div>
+                        </div>
                     </div>
+
+
 
                     <div class="form-group checkbox-group">
                         <label class="checkbox-label">
@@ -133,7 +153,8 @@
                 name: formData.get('name').trim(),
                 email: formData.get('email').trim(),
                 password: formData.get('password'),
-                role: formData.get('role')
+                hostelCode: formData.get('hostelCode').trim().toUpperCase(),
+                hostelName: formData.get('hostelName').trim()
             };
             
             const confirmPassword = formData.get('confirmPassword');

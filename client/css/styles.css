@@ -1300,13 +1300,140 @@ button {
   }
 }
 
+/* Photo Upload Styles */
+.photo-upload-section {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.current-photo {
+  flex-shrink: 0;
+}
+
+.photo-upload-controls {
+  flex: 1;
+}
+
+.photo-upload-area {
+  border: 2px dashed var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  text-align: center;
+  transition: border-color 0.2s ease;
+}
+
+.photo-upload-area:hover {
+  border-color: var(--primary-color);
+}
+
+.photo-upload-placeholder {
+  padding: 2rem 1rem;
+}
+
+.upload-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  color: var(--text-light);
+}
+
+.photo-upload-placeholder p {
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+}
+
+.photo-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.photo-preview img {
+  border: 2px solid var(--border-color);
+}
+
+.complaint-photo {
+  margin: 1rem 0;
+}
+
+.complaint-photo img {
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.complaint-photo img:hover {
+  transform: scale(1.05);
+}
+
+.upload-info {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.student-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.student-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+@media (max-width: 768px) {
+  .photo-upload-section {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+}
+
+/* Photo Modal */
+.photo-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.9);
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.3s ease;
+}
+
+.photo-modal-content {
+  position: relative;
+  text-align: center;
+}
+
+.photo-modal-close {
+  position: absolute;
+  top: -40px;
+  right: 0;
+  color: white;
+  font-size: 2rem;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0.5rem;
+}
+
+.photo-modal-close:hover {
+  opacity: 0.7;
+}
+
 /* Print Styles */
 @media print {
   .navbar,
   .user-menu,
   .card-actions,
   .admin-actions,
-  .modal {
+  .modal,
+  .photo-modal {
     display: none !important;
   }
   
