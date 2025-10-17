@@ -319,7 +319,7 @@ function renderStudentComplaints(complaintsList) {
           ${getStatusIcon(complaint.status)} ${complaint.status}
         </div>
       </div>
-      ${complaint.photo ? `<div class="complaint-photo"><img src="/uploads/${complaint.photo}" alt="Problem photo" style="max-width: 200px; max-height: 150px; border-radius: 8px; object-fit: cover; margin: 10px 0; cursor: pointer;" onclick="viewPhoto('/uploads/${complaint.photo}')"></div>` : ''}
+      ${complaint.photo ? `<div class="complaint-photo"><img src="/api/uploads/${complaint.photo}" alt="Problem photo" style="max-width: 200px; max-height: 150px; border-radius: 8px; object-fit: cover; margin: 10px 0; cursor: pointer;" onclick="viewPhoto('/api/uploads/${complaint.photo}')"></div>` : ''}
       <p class="complaint-description">${escapeHtml(truncateText(complaint.description))}</p>
       <div class="complaint-footer">
         <span class="complaint-date">Last updated: ${formatDate(complaint.updatedAt)}</span>
@@ -361,7 +361,7 @@ function renderAdminComplaints(complaintsList) {
             ${getStatusIcon(complaint.status)} ${complaint.status}
           </div>
         </div>
-        ${complaint.photo ? `<div class="complaint-photo"><img src="/uploads/${complaint.photo}" alt="Problem photo" style="max-width: 200px; max-height: 150px; border-radius: 8px; object-fit: cover; margin: 10px 0; cursor: pointer;" onclick="viewPhoto('/uploads/${complaint.photo}')"></div>` : ''}
+        ${complaint.photo ? `<div class="complaint-photo"><img src="/api/uploads/${complaint.photo}" alt="Problem photo" style="max-width: 200px; max-height: 150px; border-radius: 8px; object-fit: cover; margin: 10px 0; cursor: pointer;" onclick="viewPhoto('/api/uploads/${complaint.photo}')"></div>` : ''}
         <p class="complaint-description">${escapeHtml(truncateText(complaint.description))}</p>
         <div class="complaint-footer">
           <span class="complaint-date">Last updated: ${formatDate(complaint.updatedAt)}</span>

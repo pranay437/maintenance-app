@@ -85,7 +85,7 @@ if (process.env.NODE_ENV === 'production') {
 // 📁 Static Files (Frontend)
 // =============================
 app.use(express.static(path.join(__dirname, '../client')));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/api/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // =============================
 // 🚦 API Routes
