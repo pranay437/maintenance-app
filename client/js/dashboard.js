@@ -1,7 +1,7 @@
 // Dashboard functionality
 
 // ✅ Base URL for backend API
-const API_BASE = "http://localhost:3001";
+const API_BASE = "";
 
 // Utility for authenticated requests
 async function makeAuthenticatedRequest(endpoint, options = {}) {

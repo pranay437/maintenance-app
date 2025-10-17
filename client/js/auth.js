@@ -35,7 +35,7 @@ function setupAuthCheck() {
     const token = getAuthToken();
     if (token) {
       try {
-        const response = await fetch('http://localhost:3001/api/auth/me', {
+        const response = await fetch('/api/auth/me', {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -174,7 +174,7 @@ function handleFormErrors(errors) {
 // Login with remember me
 async function loginUser(credentials, rememberMe = false) {
   try {
-    const response = await fetch('http://localhost:3001/api/auth/login', {
+    const response = await fetch('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(credentials)
@@ -202,7 +202,7 @@ async function loginUser(credentials, rememberMe = false) {
 // Register user
 async function registerUser(userData) {
   try {
-    const response = await fetch('http://localhost:3001/api/auth/register', {
+    const response = await fetch('/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(userData)
@@ -311,7 +311,7 @@ async function createDemoAccounts() {
   
   for (const account of accounts) {
     try {
-      await fetch('http://localhost:3001/api/auth/register', {
+      await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(account)
