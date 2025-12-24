@@ -1,5 +1,8 @@
 // Utility functions for the Maintenance Request App
 
+// API Configuration
+const API_BASE_URL = 'http://localhost:3001';
+
 // Local Storage helpers
 function getAuthToken() {
   return localStorage.getItem('maintenance_app_token');

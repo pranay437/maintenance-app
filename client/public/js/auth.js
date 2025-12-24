@@ -35,7 +35,7 @@ function setupAuthCheck() {
     const token = getAuthToken();
     if (token) {
       try {
-        const response = await fetch('http://localhost:5000/api/auth/me', {
+        const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -174,7 +174,7 @@ function handleFormErrors(errors) {
 // Login with remember me
 async function loginUser(credentials, rememberMe = false) {
   try {
-    const response = await fetch('http://localhost:5000/api/auth/login', {
+    const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(credentials)
@@ -202,7 +202,7 @@ async function loginUser(credentials, rememberMe = false) {
 // Register user
 async function registerUser(userData) {
   try {
-    const response = await fetch('http://localhost:5000/api/auth/register', {
+    const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(userData)
@@ -304,14 +304,14 @@ async function quickDemoLogin(role) {
 // Create demo accounts
 async function createDemoAccounts() {
   const accounts = [
-    { name: 'John Doe', email: 'john.student@example.com', password: 'password123', role: 'student' },
-    { name: 'Admin User', email: 'admin@hostel.com', password: 'admin123', role: 'admin' },
-    { name: 'Jane Smith', email: 'jane.student@example.com', password: 'password123', role: 'student' }
+    { name: 'John Doe', email: 'john.student@example.com', password: 'password123', hostelCode: 'HST001', hostelName: 'Demo Hostel' },
+    { name: 'Admin User', email: 'admin@hostel.com', password: 'admin123', hostelCode: 'HST001', hostelName: 'Demo Hostel' },
+    { name: 'Jane Smith', email: 'jane.student@example.com', password: 'password123', hostelCode: 'HST001', hostelName: 'Demo Hostel' }
   ];
   
   for (const account of accounts) {
     try {
-      await fetch('http://localhost:5000/api/auth/register', {
+      await fetch(`${API_BASE_URL}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(account)
