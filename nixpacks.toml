@@ -2,10 +2,10 @@
 nixPkgs = ['nodejs_18']
 
 [phases.install]
-cmds = ['npm install']
+cmds = ['rm -rf node_modules package-lock.json', 'npm install --legacy-peer-deps']
 
 [phases.build]
-cmds = ['echo "No build required"']
+cmds = ['echo "Build complete"']
 
 [start]
 cmd = 'npm start'
